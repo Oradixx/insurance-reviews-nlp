@@ -1,0 +1,21 @@
+# Streamlit app
+streamlit>=1.29
+pandas
+numpy
+scikit-learn
+torch
+transformers
+sentence-transformers
+ollama               # only for app/app.py (Llama 3)
+
+# Notebook
+openpyxl             # read the .xlsx source files
+pyspellchecker
+deep-translator
+tqdm
+ipywidgets           # tqdm progress bars in Jupyter
+matplotlib
+seaborn
+wordcloud
+shap
+gensim
