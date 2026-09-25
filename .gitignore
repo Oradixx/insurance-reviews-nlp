@@ -18,3 +18,8 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+# MLOps outputs (trained on data that is not redistributed)
+models/
+mlruns/
+mlflow.db

@@ -1,0 +1,5 @@
+# What the API container needs, nothing more
+scikit-learn==1.8.0
+joblib>=1.4
+fastapi>=0.115
+uvicorn>=0.30

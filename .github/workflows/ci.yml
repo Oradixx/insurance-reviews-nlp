@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: mlops/requirements*.txt
+      - run: pip install -r mlops/requirements.txt
+      - name: Unit tests (training, quality gate, API)
+        run: pytest -q tests
+
+  docker:
+    # The real reviews are not redistributable: the image is built and smoke-tested
+    # with a model trained on synthetic reviews
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: mlops/requirements*.txt
+      - run: pip install -r mlops/requirements.txt
+      - name: Train on synthetic reviews
+        run: |
+          python mlops/make_sample.py data/processed/sample_reviews.csv
+          python mlops/train.py --data data/processed/sample_reviews.csv --min-macro-f1 0.5
+      - name: Build the API image
+        run: docker build -f mlops/Dockerfile -t reviews-rating-api .
+      - name: Smoke test the container
+        run: |
+          docker run -d --name api -p 8000:8000 reviews-rating-api
+          for i in $(seq 30); do curl -sf localhost:8000/health && break; sleep 1; done
+          curl -sf -X POST localhost:8000/predict -H 'Content-Type: application/json' \
+               -d '{"text": "excellent perfect wonderful fast"}' | tee /tmp/pred.json
+          python -c "import json; assert json.load(open('/tmp/pred.json'))['rating'] == 5"
+      - name: Container logs
+        if: always()
+        run: docker logs api || true

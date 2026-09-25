@@ -1,0 +1,7 @@
+# Training, tracking and tests. scikit-learn is pinned to the same version as the API
+# (requirements-serve.txt): the model is pickled and must be loaded by the version that saved it.
+-r requirements-serve.txt
+pandas>=2.2
+mlflow>=3.4
+pytest>=8
+httpx>=0.27
